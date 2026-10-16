@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#09111f">
+  <meta name="description" content="A personal flight companion with local flight history and airport intelligence.">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icon.svg">
+  <link rel="stylesheet" href="styles.css">
+  <title>Runway — Personal Flight Companion</title>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="#" aria-label="Runway home"><span class="brand-mark">✈</span><span>runway<span class="brand-dot">.</span></span></a>
+      <button id="settingsOpen" class="icon-btn" aria-label="Settings">⚙</button>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="eyebrow"><span class="pulse"></span> YOUR PERSONAL FLIGHT DESK</div>
+        <h1>Every journey,<br><span>in one place.</span></h1>
+        <p>Track the details. Keep the memories.</p>
+        <form id="searchForm" class="searchbar">
+          <span class="search-icon">⌕</span>
+          <input id="flightSearch" aria-label="Flight number" placeholder="Flight number, e.g. AA100" autocomplete="off" required>
+          <button type="submit">Track</button>
+        </form>
+        <div class="search-hint">Try a flight number or add a flight manually.</div>
+      </section>
+
+      <section id="liveResult" class="live-result hidden"></section>
+
+      <section class="section-block">
+        <div class="section-head"><div><div class="eyebrow muted">YOUR TRAVEL</div><h2>Flight overview</h2></div><button id="addFlightOpen" class="text-btn">＋ Add flight</button></div>
+        <div class="stats-grid">
+          <article class="stat-card"><span class="stat-icon">↗</span><span class="stat-label">Flights saved</span><strong id="statFlights">0</strong><small>your personal log</small></article>
+          <article class="stat-card"><span class="stat-icon">◉</span><span class="stat-label">Airports</span><strong id="statAirports">0</strong><small>places visited</small></article>
+          <article class="stat-card"><span class="stat-icon">⌁</span><span class="stat-label">Miles logged</span><strong id="statMiles">0</strong><small>estimated distance</small></article>
+        </div>
+      </section>
+
+      <section class="section-block">
+        <div class="section-head"><div><div class="eyebrow muted">FLIGHT JOURNAL</div><h2>My flights</h2></div><button id="exportBtn" class="text-btn">Export ↗</button></div>
+        <div class="filter-row">
+          <button class="filter active" data-filter="all">All flights</button>
+          <button class="filter" data-filter="upcoming">Upcoming</button>
+          <button class="filter" data-filter="completed">Completed</button>
+        </div>
+        <div id="flightList" class="flight-list"></div>
+      </section>
+
+      <section class="section-block">
+        <div class="section-head"><div><div class="eyebrow muted">AIRPORT INTELLIGENCE</div><h2>Airport guide</h2></div></div>
+        <p class="section-copy">Quick reference for major airports. Search to see terminal notes, local time zone, and practical travel tips.</p>
+        <div class="airport-search"><span>⌕</span><input id="airportSearch" placeholder="Search airport or city" aria-label="Search airports"></div>
+        <div id="airportGrid" class="airport-grid"></div>
+      </section>
+
+      <section class="section-block">
+        <div class="section-head"><div><div class="eyebrow muted">FLIGHT TOOLS</div><h2>Your travel kit</h2></div></div>
+        <div class="tools-grid">
+          <button class="tool-card" id="historyTool"><span>▤</span><b>Flight history</b><small>Review your journey log</small></button>
+          <button class="tool-card" id="dataTool"><span>⇄</span><b>CSV import & backup</b><small>Import past flights or restore a backup</small></button>
+          <button class="tool-card" id="installTool"><span>⌂</span><b>Add to Home Screen</b><small>Install on your iPhone</small></button>
+          <button class="tool-card" id="apiTool"><span>⌁</span><b>Live data connection</b><small id="apiStatus">Demo mode enabled</small></button>
+        </div>
+      </section>
+    </main>
+
+    <nav class="bottom-nav" aria-label="Main navigation">
+      <a href="#top" class="nav-item active"><span>⌂</span>Overview</a>
+      <a href="#flightList" class="nav-item"><span>✈</span>Flights</a>
+      <a href="#airportGrid" class="nav-item"><span>◎</span>Airports</a>
+      <button id="navSettings" class="nav-item"><span>⚙</span>Settings</button>
+    </nav>
+  </div>
+
+  <dialog id="flightDialog" class="modal">
+    <form id="addFlightForm" method="dialog">
+      <div class="modal-head"><div><div class="eyebrow muted">FLIGHT JOURNAL</div><h2>Add a flight</h2></div><button type="button" class="close-btn" data-close="flightDialog">×</button></div>
+      <label>Flight number<input name="flight" placeholder="e.g. QR730" required maxlength="12"></label>
+      <div class="two-fields"><label>From<input name="origin" placeholder="DFW" required maxlength="4"></label><label>To<input name="destination" placeholder="DOH" required maxlength="4"></label></div>
+      <label>Departure date<input name="date" type="date" required></label>
+      <div class="two-fields"><label>Airline<input name="airline" placeholder="Qatar Airways"></label><label>Distance (miles)<input name="miles" type="number" min="0" placeholder="8000"></label></div>
+      <label>Status<select name="status"><option value="upcoming">Upcoming</option><option value="completed">Completed</option><option value="cancelled">Cancelled</option></select></label>
+      <button class="primary-btn full" type="submit">Save to my flights</button>
+    </form>
+  </dialog>
+
+  <dialog id="settingsDialog" class="modal">
+    <form id="settingsForm" method="dialog">
+      <div class="modal-head"><div><div class="eyebrow muted">PERSONAL SETUP</div><h2>Settings</h2></div><button type="button" class="close-btn" data-close="settingsDialog">×</button></div>
+      <div class="notice"><b>Private by default</b><p>Your flight journal is stored in this browser on this device. It is not synced to an account.</p></div>
+      <label>Aviationstack API key <span class="optional">optional</span><input name="apiKey" type="password" placeholder="Paste your API key"><small>Used only when you request a live flight lookup. Key remains in this browser.</small></label>
+      <label class="check-label"><input name="showDemo" type="checkbox"> Show sample flights when my journal is empty</label>
+      <button class="primary-btn full" type="submit">Save settings</button>
+      <button type="button" id="clearData" class="danger-btn full">Delete all local flight data</button>
+    </form>
+  </dialog>
+
+  <dialog id="detailDialog" class="modal"><div id="detailContent"></div></dialog>
+  <input id="importFile" type="file" accept="application/json,.json,text/csv,.csv" hidden>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="app.js"></script>
+</body>
+</html>
